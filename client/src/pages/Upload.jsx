@@ -1,0 +1,13 @@
+import { Link } from "react-router-dom";
+
+export default function Upload() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold gradient-text mb-4">Upload Media</h1>
+      <p className="text-gray-400 mb-8">Coming Soon — Full Upload Page</p>
+      <Link to="/" className="text-purple-400 hover:text-purple-300 underline">
+        ← Back to Home
+      </Link>
+    </div>
+  );
+}
