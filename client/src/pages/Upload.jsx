@@ -64,6 +64,7 @@ export default function Upload() {
   }, []);
 
   const hasFile = file !== null;
+  const isVideo = file ? file.type.startsWith("video/") || /\.(mp4|mov|avi|webm|mkv)$/i.test(file.name) : false;
 
   return (
     <div className="relative min-h-screen">
@@ -116,7 +117,7 @@ export default function Upload() {
             Analyze Media
           </h1>
           <p className="text-gray-400 text-base">
-            Upload an image to check for deepfake manipulation.
+            Upload an image or video to check for deepfake manipulation.
           </p>
         </motion.div>
 
@@ -140,12 +141,19 @@ export default function Upload() {
                 <div className="flex flex-col items-center py-8">
                   {/* Small thumbnail during analysis */}
                   {file && (
-                    <div className="w-20 h-20 rounded-xl overflow-hidden mb-8 ring-2 ring-purple-500/20">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-20 h-20 rounded-xl overflow-hidden mb-8 ring-2 ring-purple-500/20 bg-black/40 flex items-center justify-center">
+                      {isVideo ? (
+                        <video
+                          src={URL.createObjectURL(file)}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
                   )}
                   <ProgressIndicator />
@@ -229,7 +237,7 @@ export default function Upload() {
                     }}
                   >
                     <ScanSearch size={17} />
-                    Analyze Image
+                    {isVideo ? "Analyze Video" : "Analyze Media"}
                   </button>
                 </motion.div>
               </motion.div>
@@ -244,7 +252,7 @@ export default function Upload() {
           transition={{ delay: 0.3 }}
           className="text-center text-xs text-gray-600 mt-10"
         >
-          Your images are processed in real-time and never permanently stored.
+          Your media files are processed in real-time and never permanently stored.
         </motion.p>
       </div>
     </div>

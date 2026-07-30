@@ -1,9 +1,34 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, X, FileImage, AlertCircle } from "lucide-react";
+import { UploadCloud, X, FileImage, FileVideo, AlertCircle } from "lucide-react";
 
-const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
-const ACCEPTED_EXT = ".jpg, .jpeg, .png";
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+const ACCEPTED_VIDEO_TYPES = [
+  "video/mp4",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/webm",
+  "video/avi",
+  "video/mkv",
+];
+
+const ACCEPTED_EXT = ".jpg, .jpeg, .png, .mp4, .mov, .avi, .webm, .mkv";
+
+function isVideoFile(f) {
+  if (!f) return false;
+  return (
+    f.type.startsWith("video/") ||
+    /\.(mp4|mov|avi|webm|mkv)$/i.test(f.name)
+  );
+}
+
+function isImageFile(f) {
+  if (!f) return false;
+  return (
+    f.type.startsWith("image/") ||
+    /\.(jpg|jpeg|png)$/i.test(f.name)
+  );
+}
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -18,8 +43,11 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
 
   const validate = useCallback((f) => {
     if (!f) return;
-    if (!ACCEPTED_TYPES.includes(f.type)) {
-      setError("Only JPG, JPEG and PNG images are supported.");
+    const isImg = isImageFile(f);
+    const isVid = isVideoFile(f);
+
+    if (!isImg && !isVid) {
+      setError("Only JPG, PNG, MP4, MOV, AVI, and WEBM files are supported.");
       return;
     }
     setError(null);
@@ -56,6 +84,7 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
   }, [onClear]);
 
   const previewUrl = file ? URL.createObjectURL(file) : null;
+  const isVideo = file ? isVideoFile(file) : false;
 
   return (
     <div className="w-full">
@@ -70,15 +99,22 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
             transition={{ duration: 0.25 }}
             className="glass rounded-2xl overflow-hidden relative group"
           >
-            {/* Image */}
+            {/* Media Preview (Image or Video) */}
             <div className="relative aspect-video sm:aspect-[16/10] w-full bg-black/40 flex items-center justify-center overflow-hidden">
-              <img
-                src={previewUrl}
-                alt={file.name}
-                className="max-h-full max-w-full object-contain"
-              />
-              {/* Overlay on hover */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              {isVideo ? (
+                <video
+                  src={previewUrl}
+                  controls
+                  playsInline
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt={file.name}
+                  className="max-h-full max-w-full object-contain"
+                />
+              )}
             </div>
 
             {/* File info bar */}
@@ -90,14 +126,18 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
                     background: "rgba(124, 58, 237, 0.12)",
                   }}
                 >
-                  <FileImage size={16} className="text-purple-400" />
+                  {isVideo ? (
+                    <FileVideo size={16} className="text-purple-400" />
+                  ) : (
+                    <FileImage size={16} className="text-purple-400" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-white font-medium truncate">
                     {file.name}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formatSize(file.size)}
+                    {formatSize(file.size)} • {isVideo ? "Video" : "Image"}
                   </p>
                 </div>
               </div>
@@ -160,7 +200,7 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
               </motion.div>
 
               <p className="text-base text-gray-300 font-medium mb-1.5">
-                {dragOver ? "Drop your image here" : "Drag & drop your image here"}
+                {dragOver ? "Drop your image or video here" : "Drag & drop your image or video here"}
               </p>
               <p className="text-sm text-gray-500 mb-4">
                 or{" "}
@@ -169,7 +209,7 @@ export default function Dropzone({ file, onFileSelect, onClear }) {
                 </span>
               </p>
               <p className="text-xs text-gray-600">
-                Supported formats: JPG, PNG
+                Supported formats: JPG, PNG, MP4, MOV, AVI, WEBM
               </p>
             </div>
 
