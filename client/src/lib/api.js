@@ -65,7 +65,8 @@ function extractVideoFrame(file) {
  */
 export async function analyzeImage(file) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  // 60s timeout — HF cold starts can take 30-60s
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const formData = new FormData();
@@ -86,11 +87,15 @@ export async function analyzeImage(file) {
       formData.append("file", file);
     }
 
+    console.log("[TruthLens] Uploading...", file.name, file.size, "bytes");
+
     const response = await fetch("/api/analyze", {
       method: "POST",
       body: formData,
       signal: controller.signal,
     });
+
+    console.log("[TruthLens] Response received:", response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
